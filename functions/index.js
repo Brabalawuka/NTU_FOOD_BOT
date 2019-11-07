@@ -1,34 +1,45 @@
-const db = require('@google-cloud/firestore')
+//firebase functions:config:set project.id='wave-sandbox-1dbd5'
+//firebase functions:config:set bot.token="965613179:AAHmrkgg_Z3RTX7IM9fm6lr2_W0TOz-zNo0"
+//firebase functions:config:set wave.uid='IbVuxpPUaaeZ0NUbvzHaulOzTJP2'
+
+const fs = require('fs');
+const admin = require('firebase-admin');
 const functions = require('firebase-functions');
-const Telegraf = require('telegraf')
-const Composer = require('telegraf/composer')
-const session = require('telegraf/session')
-const Stage = require('telegraf/stage')
-const Scene = require('telegraf/scenes/base')
+const Telegraf = require('telegraf');
+const Composer = require('telegraf/composer');
+const session = require('telegraf/session');
+const Stage = require('telegraf/stage');
+const Scene = require('telegraf/scenes/base');
 
 
-const beginning = "Entered information : \n\n"
-const bot = new Telegraf(functions.config().bot.token)
-bot.webhookReply = false
-const { enter, leave } = Stage
-const stage = new Stage()
+admin.initializeApp(functions.config().firebase);
+let db = admin.firestore();
+let myBucket = admin.storage().bucket();
 
 
+const beginning = "Entered information : \n\n";
+const bot = new Telegraf(functions.config().bot.token);
+const { enter, leave } = Stage;
+const stage = new Stage();
 
-const getFoodType = new Scene("getFoodType")
-stage.register(getFoodType)
-const getLocation = new Scene("getLocation")
-stage.register(getLocation)
-const getDescrption = new Scene("getDescription")
-stage.register(getDescrption)
-const getPic = new Scene("getPic")
-stage.register(getPic)
-const getEndTime = new Scene("getEndTime")
-stage.register(getEndTime)
+const webHook = 'https://api.telegram.org/bot965613179:AAHmrkgg_Z3RTX7IM9fm6lr2_W0TOz-zNo0/setWebhook?url=https://us-central1-wave-sandbox-1dbd5.cloudfunctions.net/helloWorld'
+const getWEbHook = 'https://api.telegram.org/bot965613179:AAHmrkgg_Z3RTX7IM9fm6lr2_W0TOz-zNo0/getWebhookInfo'
 
 
-bot.use(session())
-bot.use(stage.middleware())
+const getFoodType = new Scene("getFoodType");
+stage.register(getFoodType);
+const getLocation = new Scene("getLocation");
+stage.register(getLocation);
+const getDescrption = new Scene("getDescription");
+stage.register(getDescrption);
+const getPic = new Scene("getPic");
+stage.register(getPic);
+const getEndTime = new Scene("getEndTime");
+stage.register(getEndTime);
+
+
+bot.use(session());
+bot.use(stage.middleware());
 
 
 
@@ -37,8 +48,8 @@ bot.start((ctx) => {
     ctx.reply(
       'Enter food type:  eg. buffet,dessert',
       { reply_markup: { remove_keyboard: true } }  
-    )
-    ctx.scene.enter('getFoodType')
+    );
+    ctx.scene.enter('getFoodType');
   })
 
 ///Get food type part
@@ -221,15 +232,15 @@ getDescrption.on('text', async (ctx) => {
         
     
 
-            ctx.replyWithMarkdown(
+            ctx.reply(
                 beginning +
                 `Food type:  ${ctx.session.foodType} \n` +
                 `Location: ${ctx.session.location} \n` +
                 `Estimated Ending: ${ctx.session.endTime} \n` +
                 `Description: ${ctx.session.description} \n\n` +
-                'Note that you have reached the last step, if you have any photo for the food, upload a photo now to finish the post\n **OR** \n' + 
-                'you can click Next ▶ button to finish **without a photo**.\n\n' + 
-                'By finishing, you agrre to let bot to represent you to post to food channel and pls do not post misleading info',
+                'Note that you have reached the last step, if you have any photo for the food, upload a photo now to finish the post\n\nOR\n\n' + 
+                'you can click Next ▶ button to finish without a photo.\n\n' + 
+                'By finishing, you agree to let bot to represent you to post to food channel and pls do not post misleading info',
                 { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], resize_keyboard: true, one_time_keyboard: true } }
                 )
 
@@ -298,16 +309,55 @@ getPic.on('text', async (ctx) => {
             'Sending the post.... Please Wait \n'
             )
 
-        // await createPostOnChannel();
-        // await createPostOnFirebase();
+        //await createPostOnChannel();
 
-        ctx.reply(
-            'Post created!'
-            )
+
+        //Create post on our wave discsussion channel
+        var createdTime = admin.firestore.Timestamp.now();
+        var documentName = createdTime.toMillis()+"+"+functions.config().wave.uid;
+        var content = 
+          `Estimated Ending: ${ctx.session.endTime} \n` +
+          `Posted by: @${ctx.from.id} \n` +
+          `Food type:  ${ctx.session.foodType} \n` +
+          `Location: ${ctx.session.location} \n` +
+          `Description: ${ctx.session.description} \n`
+        let foodinfo = {
+          'creatorID' : 'Wave Admin',
+          'isAnonymous' : false,
+          'createdTime' : createdTime,
+          'likedPeople' : {},
+          'title' : `${ctx.session.foodType} at ${ctx.session.location}`,
+          'content' : content,
+          'category' : 'Food',
+          'creatorUID' : functions.config().wave.uid,
+          'hasImage' : false,
+          'isPinned' : false,
+          'isHidden' : false,
+          'commentCount' : 0,
+          'likeCount' : 0,
+          'threadID' : documentName,
+
+
+        }
+
+        let postRef = db.collection('discussion').doc('NTU').collection('Food').doc(documentName);
+        postRef.set(foodinfo).then(function() {
+          ctx.reply('Post created!')
+          console.log(`New Post from @${ctx.from.id}`);
+          return
+
+        }).catch(e => {
+          ctx.reply('Post creation failed! Please Try again later')
+          console.log(`New Post from ${ctx.from.id}`, e);
+        });
+
+      
+
+        
 
         await ctx.scene.leave('getPic')
         
-        return
+        
 
     }
 
@@ -321,11 +371,10 @@ getPic.on('text', async (ctx) => {
   })
 
 
-  getDescrption.on('photo', async (ctx) => {
+  getPic.on('photo', async (ctx) => {
 
     ctx.replyWithChatAction('typing')
-
-    const imageData = await bot.telegram.getFile(ctx.message.photo[ctx.message.photo.length - 1].file_id)
+    
     
 
     ctx.reply(
@@ -337,8 +386,56 @@ getPic.on('text', async (ctx) => {
         'Sending the post.... Please Wait \n'
         )
 
-    // await createPostOnChannel();
-    // await createPostOnFirebase();
+    var createdTime = admin.firestore.Timestamp;
+    var documentName = createdTime.fromMillis+"+"+functions.config().wave.uid;
+
+
+    const newfile = myBucket.file(`discussion/NTU/images/${functions.config().wave.uid}/${createdTime}.jpg`);
+
+    const imageLink = await bot.telegram.getFileLink(ctx.message.photo[ctx.message.photo.length - 1].file_id)
+    console.log(imageLink);
+
+
+    var fd = fs.createReadStream(imageLink)
+    fd.pipe(newfile.createWriteStream())
+
+
+    var end = new Promise(function(resolve, reject) {
+      fd.on('finish', resolve);
+      fd.on('error', reject); // or something like that. might need to close `hash`
+    });
+
+    let sha1sum = await end;
+    console.log(sha1sum);
+
+    
+
+    var content = 
+      `Posted by: ${ctx.from.id} \n` +
+      `Food type:  ${ctx.session.foodType} \n` +
+      `Location: ${ctx.session.location} \n` +
+      `Estimated Ending: ${ctx.session.endTime} \n` +
+      `Description: ${ctx.session.description} \n`
+    let foodinfo = {
+      'creatorID' : 'Wave Admin',
+      'isAnonymous' : false,
+      'createdTime' : createdTime,
+      'likedPeople' : {},
+      'title' : `${ctx.session.foodType} at ${ctx.session.location}`,
+      'content' : content,
+      'category' : 'Food',
+      'creatorUID' : functions.config().wave.uid,
+      'hasImage' : true,
+      'imageUrl' : "",
+      'isPinned' : false,
+      'isHidden' : false,
+      'commentCount' : 0,
+      'likeCount' : 0,
+      'threadID' : documentName,
+
+
+    }
+
 
     ctx.reply(
         'Post created!'
@@ -346,7 +443,7 @@ getPic.on('text', async (ctx) => {
 
     await ctx.scene.leave('getPic')
     
-    return
+  
     
   })
 
@@ -356,6 +453,19 @@ bot.on('message', (ctx) => ctx.reply('To post new free food, enter /start'))
 
 
 
-bot.launch()
+//bot.launch()
+
+
+exports.bot = functions.https.onRequest(
+  (req, res) => bot.handleUpdate(req.body, res)
+)
+
+
+// exports.helloworld = functions.https.onRequest(
+//   (req, res) => Console.log("Hello World")
+// )
+
+
+
 
 
