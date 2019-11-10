@@ -1,6 +1,4 @@
-//firebase functions:config:set project.id='wave-sandbox-1dbd5'
-//firebase functions:config:set bot.token="965613179:AAHmrkgg_Z3RTX7IM9fm6lr2_W0TOz-zNo0"
-//firebase functions:config:set wave.uid='IbVuxpPUaaeZ0NUbvzHaulOzTJP2'
+
 
 const fs = require('fs');
 const os = require('os');
@@ -14,6 +12,15 @@ const Stage = require('telegraf/stage');
 const Scene = require('telegraf/scenes/base');
 const Telegram = require('telegraf/telegram');
 const https = require('https');
+const axios = require('axios').default;
+
+
+const ProjectID = 'wave-sandbox-1dbd5'
+const botToken = "965613179:AAHmrkgg_Z3RTX7IM9fm6lr2_W0TOz-zNo0"
+const waveUID = 'IbVuxpPUaaeZ0NUbvzHaulOzTJP2'
+const bucket = "wave-sandbox-1dbd5.appspot.com"
+const channelID = "@wave_bot_test"
+const imageServerURl = 'https://admin.ntuevents.com/api/food/upload'
 
 //Initialise app
 admin.initializeApp(functions.config().firebase);
@@ -22,18 +29,16 @@ admin.initializeApp(functions.config().firebase);
 let db = admin.firestore();
 
 //Bucket instance
-let myBucket = admin.storage().bucket("wave-sandbox-1dbd5.appspot.com");
+let myBucket = admin.storage().bucket(bucket);
 
 
 const beginning = "Entered information : \n\n";
 
 //bot instance
-const bot = new Telegraf("965613179:AAHmrkgg_Z3RTX7IM9fm6lr2_W0TOz-zNo0");
+const bot = new Telegraf(botToken);
 
 const stage = new Stage();
 
-const webHook = 'https://api.telegram.org/bot965613179:AAHmrkgg_Z3RTX7IM9fm6lr2_W0TOz-zNo0/setWebhook?url=https://us-central1-wave-sandbox-1dbd5.cloudfunctions.net/helloWorld'
-const getWEbHook = 'https://api.telegram.org/bot965613179:AAHmrkgg_Z3RTX7IM9fm6lr2_W0TOz-zNo0/getWebhookInfo'
 
 
 const getFoodType = new Scene("getFoodType");
@@ -56,6 +61,13 @@ bot.use(stage.middleware());
 //Starting sequence
 bot.start((ctx) => {
   console.log(ctx.from)
+
+  ctx.session.foodType = null
+  ctx.session.location = null
+  ctx.session.endTime = null
+  ctx.session.description = null
+  ctx.session.hasImage = null
+  
     ctx.reply(
       'Enter food type:  eg. buffet,dessert',
     
@@ -103,7 +115,7 @@ getFoodType.on('text', async (ctx) => {
       beginning +
       `Food type:  ${ctx.session.foodType} \n\n` +
       'Click Next ▶ button to continue, or u can re-enter the food type ',
-      { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], resize_keyboard: true, one_time_keyboard: true } }
+      { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], remove_keyboard: true, resize_keyboard: true, one_time_keyboard: true } }
       )
     
   })
@@ -130,7 +142,7 @@ getLocation.on('text', async (ctx) => {
             beginning +
             `Food type:  ${ctx.session.foodType} \n\n` +
             'Click Next ▶ button to continue, or u can re-enter the food type ',
-            { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], resize_keyboard: true, one_time_keyboard: true } }
+            { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], remove_keyboard: true, resize_keyboard: true, one_time_keyboard: true } }
             )
         return
 
@@ -152,7 +164,7 @@ getLocation.on('text', async (ctx) => {
       `Food type:  ${ctx.session.foodType} \n` +
       `Location: ${ctx.session.location} \n\n` +
       'Click Next ▶ button to continue, or u can re-enter the location',
-      { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], resize_keyboard: true, one_time_keyboard: true } }
+      { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], remove_keyboard: true, resize_keyboard: true, one_time_keyboard: true } }
       )
     
   })
@@ -181,7 +193,7 @@ getEndTime.on('text', async (ctx) => {
             `Food type:  ${ctx.session.foodType} \n` +
             `Location: ${ctx.session.location} \n\n` +
             'Click Next ▶ button to continue, or u can re-enter the location ',
-            { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], resize_keyboard: true, one_time_keyboard: true } }
+            { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], remove_keyboard: true, resize_keyboard: true, one_time_keyboard: true } }
             )
         return
 
@@ -203,7 +215,7 @@ getEndTime.on('text', async (ctx) => {
       `Location: ${ctx.session.location} \n` +
       `Estimated Ending: ${ctx.session.endTime} \n\n` +
       'Click Next ▶ button to continue, or u can re-enter the end time',
-      { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], resize_keyboard: true, one_time_keyboard: true } }
+      { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], remove_keyboard: true, resize_keyboard: true, one_time_keyboard: true } }
       )
     
   })
@@ -234,7 +246,7 @@ getDescrption.on('text', async (ctx) => {
             `Location: ${ctx.session.location} \n` +
             `Estimated Ending: ${ctx.session.endTime} \n\n` +
             'Click Next ▶ button to continue, or u can re-enter the end time',
-            { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], resize_keyboard: true, one_time_keyboard: true } }
+            { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], remove_keyboard: true, resize_keyboard: true, one_time_keyboard: true } }
             )
         return
 
@@ -264,7 +276,7 @@ getDescrption.on('text', async (ctx) => {
       `Estimated Ending: ${ctx.session.endTime} \n` +
       `Description: ${ctx.session.description} \n\n` +
       'Click Next ▶ button to continue, or u can re-enter the description',
-      { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], resize_keyboard: true, one_time_keyboard: true } }
+      { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], remove_keyboard: true, resize_keyboard: true, one_time_keyboard: true } }
       )
     
   })
@@ -299,7 +311,7 @@ getPic.on('text', async (ctx) => {
             `Estimated Ending: ${ctx.session.endTime} \n` +
             `Description: ${ctx.session.description} \n\n` +
             'Click Next ▶ button to continue, or u can re-enter the description',
-            { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], resize_keyboard: true, one_time_keyboard: true } }
+            { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], remove_keyboard: true, resize_keyboard: true, one_time_keyboard: true } }
             )
         return
 
@@ -311,7 +323,7 @@ getPic.on('text', async (ctx) => {
         if (!ctx.hasImage){
           var createdTime = admin.firestore.Timestamp.now();
           ctx.session.createdTime = createdTime
-          ctx.session.documentID = createdTime.toMillis()+"+"+"IbVuxpPUaaeZ0NUbvzHaulOzTJP2";
+          ctx.session.documentID = createdTime.toMillis()+"+"+waveUID;
         }
        
         var content = 
@@ -328,7 +340,7 @@ getPic.on('text', async (ctx) => {
           'title' : `${ctx.session.foodType} at ${ctx.session.location}`,
           'content' : content,
           'category' : 'Food',
-          'creatorUID' : "IbVuxpPUaaeZ0NUbvzHaulOzTJP2",
+          'creatorUID' : waveUID,
           'hasImage' : ctx.session.hasImage,
           'isPinned' : false,
           'isHidden' : false,
@@ -348,10 +360,10 @@ getPic.on('text', async (ctx) => {
 
       
           if (ctx.session.hasImage){
-            ctx.telegram.sendPhoto("@wave_bot_test", ctx.session.imageFileId, {caption: content} );
+            ctx.telegram.sendPhoto(channelID, ctx.session.imageFileId, {caption: content} );
   
           } else {
-            ctx.telegram.sendMessage("@wave_bot_test", content);
+            ctx.telegram.sendMessage(channelID, content);
 
           }
 
@@ -388,7 +400,7 @@ getPic.on('text', async (ctx) => {
       'Note that you have reached the last step, if you still have any photo for the food, upload a photo now \n\nOR\n\n' + 
       'you can click Next ▶ button to finish without a photo.\n\n' + 
       'By finishing, you agree to let bot to represent you to post to food channel and pls do not post misleading info',
-      { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], resize_keyboard: true, one_time_keyboard: true } }
+      { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], remove_keyboard: true,  resize_keyboard: true, one_time_keyboard: true } }
       )
   
     
@@ -399,63 +411,51 @@ getPic.on('text', async (ctx) => {
 
     var createdTime = admin.firestore.Timestamp.now();
     ctx.session.createdTime = createdTime;
-    ctx.session.documentID = createdTime.toMillis()+"+"+functions.config().wave.uid;
-    const myImage = path.join(os.tmpdir(), "temp.jpg")
-    const myImageStream = fs.createWriteStream(myImage);
-    console.log(myImage + " path created")
+    ctx.session.documentID = createdTime.toMillis()+"+"+waveUID;
 
-    //const newfile = myBucket.file(`discussion/NTU/images/${functions.config().wave.uid}/${createdTime}.jpg`);
     ctx.session.imageFileId = ctx.message.photo[ctx.message.photo.length - 1].file_id
     const imageLink = await bot.telegram.getFileLink(ctx.session.imageFileId)
-    console.log(imageLink);
-    ctx.session.hasImage = true;
-    ctx.session.imageUrl = imageLink;
+    console.log("Telegram Image link get: " + imageLink);
 
     function upload(link, cb){
 
-      https.get(link, function(response) {
-        response.pipe(myImageStream);
-        console.log("start piping")
-        myImageStream.on('finish', function(){
-          
-  
-          myBucket.upload("/tmp/temp.jpg", {
-            destination: `${createdTime.toMillis()}.jpg`,
-            metadata: {
-              cacheControl: 'no-cache',
-            },
-          }).then(value =>{
-            
-            ctx.reply(
-              beginning +
-              `Food type:  ${ctx.session.foodType} \n` +
-              `Location: ${ctx.session.location} \n` +
-              `Estimated Ending: ${ctx.session.endTime} \n` +
-              `Description: ${ctx.session.description} \n` +
-              `Photo: Uploaded new photo\n\n` +
-        
-              'Note that you have reached the last step, you can replace the photo by new photo\n\nOR\n\n' + 
-              'you can enter other words to delete photo, after that,\n' + 
-              'you can click Next ▶ button to finish posting\n\n' + 
-              'By finishing, you agree to let bot to represent you to post to food channel and pls do not post misleading info',
-              { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], resize_keyboard: true, one_time_keyboard: true } }
-              )
-            cb(value)
-            return
+      axios.get(imageServerURl, {
+        data: {
+          'image': link,
+          'imagename': createdTime.toMillis()+'.jpg'
+        }
+      })
+      .then(function (response) {
+        console.log(response.data)
+        ctx.session.hasImage = true;
+        ctx.session.imageUrl = String(response.data);
 
-          }).catch(err => {
-            console.log("error occured during uploading")
-            ctx.reply(
-              "Bot server error! We are sorrry!\n\n" + 
-              "You can try Send me a photo of the food agian or you can send any text if you want to skip have photo :"
-            )
-            cb(err)
-            
-          });
-          
-        })
+        ctx.reply(
+          beginning +
+          `Food type:  ${ctx.session.foodType} \n` +
+          `Location: ${ctx.session.location} \n` +
+          `Estimated Ending: ${ctx.session.endTime} \n` +
+          `Description: ${ctx.session.description} \n` +
+          `Photo: Uploaded new photo\n\n` +
   
-      });
+          'Note that you have reached the last step, you can replace the photo by new photo\n\nOR\n\n' + 
+          'you can enter other words to delete photo, after that,\n' + 
+          'you can click Next ▶ button to finish posting\n\n' + 
+          'By finishing, you agree to let bot to represent you to post to food channel and pls do not post misleading info',
+          { reply_markup: { keyboard: [['◀️ Back', 'Next ▶']], remove_keyboard: true, resize_keyboard: true, one_time_keyboard: true } }
+          )
+        cb(response)
+        return
+      })
+      .catch(function (error) {
+        console.log("error occured during uploading")
+        ctx.reply(
+          "Bot server error! We are sorrry!\n\n" + 
+          "You can try Send me a photo of the food agian or you can send any text if you want to skip have photo :"
+        )
+        cb(error)
+        
+      })
 
     }
 
