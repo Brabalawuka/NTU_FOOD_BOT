@@ -2,7 +2,7 @@
 const admin = require('firebase-admin');
 const functions = require('firebase-functions');
 const CLICK_ACTION = 'FLUTTER_NOTIFICATION_CLICK';
-const WAVE_IMAGE = 'https://firebasestorage.googleapis.com/v0/b/wave-sandbox-1dbd5.appspot.com/o/FCMImages%2Ficon.png?alt=media&token=8e19a495-cf45-4f60-8e09-273e16af4fd8'
+const WAVE_IMAGE = 'https://i.ibb.co/KFQYW0z/icon.png'
 
 
 function newTopicNotification(topic){
@@ -11,7 +11,7 @@ function newTopicNotification(topic){
     var notiTopic = `discussion_${topic}`;
     var title = "New Free Food in NTU"
 
-    return functions.region("asia-east2").firestore.document(`discussion/NTU/${topic}/{newPost}`).onCreate((snapShot, context) => {
+    return functions.firestore.document(`discussion/NTU/${topic}/{newPost}`).onCreate((snapShot, context) => {
         const content = snapShot.data();
         var body = content.title;
         var category = content.category
@@ -23,6 +23,16 @@ function newTopicNotification(topic){
               title : title,
               body : body,
               image : WAVE_IMAGE
+            },
+            apns: {
+              payload: {
+                  aps: {
+                      "mutable-content": 1
+                  }
+              },
+              fcm_options: {
+                  image:  WAVE_IMAGE
+              }
             },
             data : {
               notificationType : notificationType,
