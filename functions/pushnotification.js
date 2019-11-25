@@ -5,11 +5,11 @@ const CLICK_ACTION = 'FLUTTER_NOTIFICATION_CLICK';
 const WAVE_IMAGE = 'https://i.ibb.co/KFQYW0z/icon.png'
 
 
-function newTopicNotification(topic){
+function newTopicNotification(topic, notiTitle){
 
     const notificationType = "discussionThread"
     var notiTopic = `discussion_${topic}`;
-    var title = "New Free Food in NTU"
+    var title = notiTitle
 
     return functions.firestore.document(`discussion/NTU/${topic}/{newPost}`).onCreate((snapShot, context) => {
         const content = snapShot.data();
@@ -62,5 +62,4 @@ function newTopicNotification(topic){
 
 module.exports = {
   newTopicNotification,
-
 }
