@@ -45,7 +45,7 @@ function newTopicNotification(topic, notiTitle){
 
         admin.messaging().send(message).then((response) => {
             // Response is a message ID string. 
-            console.log('Successfully sent message:', response);
+            console.log('Successfully sent message:', message);
             return;
         })
         .catch((error) => {

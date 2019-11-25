@@ -14,7 +14,7 @@ exports.bot2 = functions.https.onRequest(
 
 exports.pushNotiOnFoodChannel = pushNotification.newTopicNotification("Food", "New Free Food in NTU");
 
-exports.pushNotiOnFoodChannel = pushNotification.newTopicNotification("Announcement", "Announcement from U-Wave!");
+exports.pushNotiOnAnnouncementChannel = pushNotification.newTopicNotification("Announcement", "Announcement from U-Wave!");
 
 
 
