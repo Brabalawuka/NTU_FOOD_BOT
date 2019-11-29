@@ -24,16 +24,16 @@ function newTopicNotification(topic, notiTitle){
               body : body,
               image : WAVE_IMAGE
             },
-            apns: {
-              payload: {
-                  aps: {
-                      "mutable-content": 1
-                  }
-              },
-              fcm_options: {
-                  image:  WAVE_IMAGE
-              }
-            },
+            // apns: {
+            //   payload: {
+            //       aps: {
+            //           "mutable-content": 1
+            //       }
+            //   },
+            //   fcm_options: {
+            //       image:  WAVE_IMAGE
+            //   }
+            // },
             data : {
               notificationType : notificationType,
               documentID: documentID,
