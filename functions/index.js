@@ -10,7 +10,9 @@ const pushNotification = require('./pushnotification');
 
 exports.bot2 = functions.https.onRequest(
   (req, res) => bot.bot.handleUpdate(req.body, res)
+  // (req, res) => {res.sendStatus(200)}
 )
+
 
 exports.pushNotiOnFoodChannel = pushNotification.newTopicNotification("Food", "New Free Food in NTU");
 
