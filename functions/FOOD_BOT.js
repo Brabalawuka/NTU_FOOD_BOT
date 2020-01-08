@@ -53,8 +53,8 @@ bot.start((ctx) => {
   ctx.session.hasImage = null
   
     ctx.reply(
-      'Hi, I love free food! \nWhat kind of food do you have: ',
-      { reply_markup: { keyboard: [['Buffet', 'Bentos', 'Snacks', 'Others']],  resize_keyboard: true, one_time_keyboard: true} }
+      'Hi, I’m Frobo! I love free food!\nWhat kind of food do you have?',
+      { reply_markup: { keyboard: [['Buffet', 'Bentos', 'Others']],  resize_keyboard: true, one_time_keyboard: true} }
   
     );
   
@@ -66,7 +66,7 @@ bot.start((ctx) => {
 getFoodType.command('start', async (ctx) => {
   ctx.reply(
     'Lets start over, What kind of food do you have: ',
-    { reply_markup: { keyboard: [['Buffet', 'Bentos', 'Snacks', 'Others']],  resize_keyboard: true, one_time_keyboard: true} }
+    { reply_markup: { keyboard: [['Buffet', 'Bentos', 'Others']],  resize_keyboard: true, one_time_keyboard: true} }
 
   )
   ctx.session.foodType = null
@@ -86,7 +86,7 @@ getFoodType.on('text', async (ctx) => {
         if (ctx.session.foodType === null){
             ctx.reply('Please dont skip! What kind of food do you have: ')
         } else {
-            ctx.reply('Ohh yummy, can you tell me where it is? ')
+            ctx.reply('Ohh yummy, i love free food, can you tell me where did you spot yours? (Be as specific with the location as possible, to ensure your friends can find them)')
             await ctx.scene.leave('getFoodType')
             ctx.scene.enter('getLocation')
 
@@ -100,8 +100,8 @@ getFoodType.on('text', async (ctx) => {
     ctx.reply(
       beginning +
       `Food type:  ${ctx.session.foodType} \n\n` +
-      'Click Next > button to continue, or u can re-enter the food type ',
-      { reply_markup: { keyboard: [['< Back', 'Next >']],  resize_keyboard: true, one_time_keyboard: true} }
+      'Click "Next" button to confirm, or you can re-enter by typing the food type.',
+      { reply_markup: { keyboard: [['Back', 'Next']],  resize_keyboard: true, one_time_keyboard: true} }
       )
     
   })
@@ -121,21 +121,21 @@ getLocation.command('start', async (ctx) => {
 })
 
 getLocation.on('text', async (ctx) => {
-    if (ctx.message.text === '<< Back') {
+    if (ctx.message.text === '👈🏻 Back') {
         await ctx.scene.leave('getLocation')
         ctx.session.location = null
         ctx.scene.enter('getFoodType')
         ctx.reply(
             beginning +
             `Food type:  ${ctx.session.foodType} \n\n` +
-            'Click Next > button to continue, or u can re-enter the food type ',
+            'Click "Next" button to continue, or u can re-enter by typing the food type.',
             { reply_markup: { keyboard: [['< Back', 'Next >']],  resize_keyboard: true, one_time_keyboard: true,  } }
             )
         return
 
-    } else if (ctx.message.text === 'Next >>') {
+    } else if (ctx.message.text === 'Next 👉🏻') {
         if (ctx.session.location === null){
-            return ctx.reply('Please dont skip! can you tell me where it is?')
+            return ctx.reply('Please don\'t skip! Do tell me where it is.🤭')
         } else {
             ctx.reply('🤤🤤 What time will the food be cleared? ')
             await ctx.scene.leave('getLocation')
@@ -151,7 +151,7 @@ getLocation.on('text', async (ctx) => {
       `Food type:  ${ctx.session.foodType} \n` +
       `Location: ${ctx.session.location} \n\n` +
       'Click Next > button to continue, or u can re-enter the location',
-      { reply_markup: { keyboard: [['<< Back', 'Next >>']], resize_keyboard: true, one_time_keyboard: true, } }
+      { reply_markup: { keyboard: [['👈🏻 Back', 'Next 👉🏻']], resize_keyboard: true, one_time_keyboard: true, } }
       )
     
   })
@@ -161,7 +161,7 @@ getLocation.on('text', async (ctx) => {
 getEndTime.command('start', async (ctx) => {
   ctx.reply(
     'Lets start over, What kind of food do you have: ',
-    { reply_markup: { keyboard: [['Buffet', 'Bentos', 'Snacks', 'Others']],  resize_keyboard: true, one_time_keyboard: true} }
+    { reply_markup: { keyboard: [['Buffet', 'Bentos', 'Others']],  resize_keyboard: true, one_time_keyboard: true} }
 
   )
   ctx.session.foodType = null
@@ -172,7 +172,7 @@ getEndTime.command('start', async (ctx) => {
 })
 
 getEndTime.on('text', async (ctx) => {
-    if (ctx.message.text === '< Back') {
+    if (ctx.message.text === 'Back') {
         await ctx.scene.leave('getEndTime')
         ctx.session.endTime = null
         ctx.scene.enter('getLocation')
@@ -180,16 +180,16 @@ getEndTime.on('text', async (ctx) => {
             beginning +
             `Food type:  ${ctx.session.foodType} \n` +
             `Location: ${ctx.session.location} \n\n` +
-            'Click Next > button to continue, or u can re-enter the location ',
-            { reply_markup: { keyboard: [['<< Back', 'Next >>']],  resize_keyboard: true, one_time_keyboard: true } }
+            'Click "Next" button to continue, or u can re-enter the location ',
+            { reply_markup: { keyboard: [['👈🏻 Back', 'Next 👉🏻']],  resize_keyboard: true, one_time_keyboard: true } }
             )
         return
 
-    } else if (ctx.message.text === 'Next >') {
+    } else if (ctx.message.text === 'Next') {
         if (ctx.session.endTime === null){
             return ctx.reply('Please dont skip! What time will the food be cleared? ')
         } else {
-            ctx.reply('Anything else you want to add? Is it halal, vegetarian...ect')
+            ctx.reply('Anything else you want to add? Is it halal, vegetarian...etc')
             await ctx.scene.leave('getEndTime')
             ctx.scene.enter('getDescription')
         }
@@ -202,8 +202,8 @@ getEndTime.on('text', async (ctx) => {
       `Food type:  ${ctx.session.foodType} \n` +
       `Location: ${ctx.session.location} \n` +
       `Clearing Time: ${ctx.session.endTime} \n\n` +
-      'Click Next > button to continue, or u can re-enter the clearing time',
-      { reply_markup: { keyboard: [['< Back', 'Next >']],  resize_keyboard: true, one_time_keyboard: true } }
+      'Click "Next" button to continue, or u can re-enter the clearing time',
+      { reply_markup: { keyboard: [['Back', 'Next']],  resize_keyboard: true, one_time_keyboard: true } }
       )
     
   })
@@ -212,7 +212,7 @@ getEndTime.on('text', async (ctx) => {
 getDescrption.command('start', async (ctx) => {
   ctx.reply(
     'Lets start over, What kind of food do you have: ',
-    { reply_markup: { keyboard: [['Buffet', 'Bentos', 'Snacks', 'Others']],  resize_keyboard: true, one_time_keyboard: true} }
+    { reply_markup: { keyboard: [['Buffet', 'Bentos', 'Others']],  resize_keyboard: true, one_time_keyboard: true} }
 
   )
   ctx.session.foodType = null
@@ -225,7 +225,7 @@ getDescrption.command('start', async (ctx) => {
 
 
 getDescrption.on('text', async (ctx) => {
-    if (ctx.message.text === '<< Back') {
+    if (ctx.message.text === '👈🏻 Back') {
         await ctx.scene.leave('getDescription')
         ctx.session.description = null
         ctx.scene.enter('getEndTime')
@@ -234,17 +234,17 @@ getDescrption.on('text', async (ctx) => {
             `Food type:  ${ctx.session.foodType} \n` +
             `Location: ${ctx.session.location} \n` +
             `Clearing time: ${ctx.session.endTime} \n\n` +
-            'Click Next > button to continue, or u can re-enter the clearing time',
-            { reply_markup: { keyboard: [['< Back', 'Next >']], resize_keyboard: true, one_time_keyboard: true } }
+            'Click "Next" button to continue, or u can re-enter the clearing time',
+            { reply_markup: { keyboard: [['Back', 'Next']], resize_keyboard: true, one_time_keyboard: true } }
             )
         return
 
-    } else if (ctx.message.text === 'Next >>') {
+    } else if (ctx.message.text === 'Next 👉🏻') {
         if (ctx.session.description === null){
             return ctx.reply('Please enter free food description:')
         } else {
 
-          ctx.reply('No pics no count, ammrite? Send a picture of the spread, please. \nOr you can send any text if you dont have photo :')
+          ctx.reply('No pics no count, am i right? Send a picture of the spread, please.')
 
 
           await ctx.scene.leave('getDescription')
@@ -264,8 +264,8 @@ getDescrption.on('text', async (ctx) => {
       `Location: ${ctx.session.location} \n` +
       `Clearing time: ${ctx.session.endTime} \n` +
       `Description: ${ctx.session.description} \n\n` +
-      'Click Next > button to continue, or u can re-enter the description',
-      { reply_markup: { keyboard: [['<< Back', 'Next >>']], resize_keyboard: true, one_time_keyboard: true } }
+      'Click "Next" button to continue, or u can re-enter the description',
+      { reply_markup: { keyboard: [['👈🏻 Back', 'Next 👉🏻']], resize_keyboard: true, one_time_keyboard: true } }
       )
     
   })
@@ -275,7 +275,7 @@ getDescrption.on('text', async (ctx) => {
 getPic.command('start', async (ctx) => {
   ctx.reply(
     'Lets start over, What kind of food do you have: ',
-    { reply_markup: { keyboard: [['Buffet', 'Bentos', 'Snacks', 'Others']],  resize_keyboard: true, one_time_keyboard: true} }
+    { reply_markup: { keyboard: [['Buffet', 'Bentos', 'Others']],  resize_keyboard: true, one_time_keyboard: true} }
 
   )
   ctx.session.foodType = null
@@ -291,7 +291,7 @@ getPic.command('start', async (ctx) => {
 getPic.on('text', async (ctx) => {
   
 
-    if (ctx.message.text === '< Back') {
+    if (ctx.message.text === 'Back') {
         await ctx.scene.leave('getPic')
         ctx.scene.enter('getDescription')
         ctx.reply(
@@ -300,14 +300,14 @@ getPic.on('text', async (ctx) => {
             `Location: ${ctx.session.location} \n` +
             `Clearing time: ${ctx.session.endTime} \n` +
             `Description: ${ctx.session.description} \n\n` +
-            'Click Next > button to continue, or u can re-enter the description',
-            { reply_markup: { keyboard: [['<< Back', 'Next >>']],  resize_keyboard: true, one_time_keyboard: true } }
+            'Click "Next" button to continue, or u can re-enter the description',
+            { reply_markup: { keyboard: [['👈🏻 Back', 'Next 👉🏻']],  resize_keyboard: true, one_time_keyboard: true } }
             )
         return
 
-    } else if (ctx.message.text === 'Post >') {
+    } else if (ctx.message.text === 'Post') {
       if (ctx.session.hasImage === null){
-        return ctx.reply('Please do not skip photo upload session, type in other words if u dont have a photo')
+        return ctx.reply('Please do not skip uploading of photos, please type "No photos" if u dont have a photo.')
 
       } else {
         if (!ctx.hasImage){
@@ -389,7 +389,7 @@ getPic.on('text', async (ctx) => {
       'Thank you for feeding Frobo! \nI’ll get your news to everyone ASAP. If you still have any photo for the food, upload a photo now \n\nOR\n\n' + 
       'Click Post > to send this info to the free food channel and uWave app. Or if you would like to resubmit information click < Back\n\n',
       
-      { reply_markup: { keyboard: [['< Back', 'Post >']], resize_keyboard: true, one_time_keyboard: true } }
+      { reply_markup: { keyboard: [['Back', 'Post']], resize_keyboard: true, one_time_keyboard: true } }
       )
   
     
@@ -437,8 +437,8 @@ getPic.on('text', async (ctx) => {
       .catch(function (error) {
         console.log("error occured during uploading")
         ctx.reply(
-          "Bot server error! We are sorrry!\n\n" + 
-          "You can try Send me a photo of the food agian or you can send any text if you want to skip have photo :"
+          "Bot server error! We are sorry!\n\n" +
+          'You can try send me a photo of the food again or you can type "No photos" if u dont have a photo: '
         )
         cb(error)
         
