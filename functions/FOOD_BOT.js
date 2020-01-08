@@ -427,7 +427,7 @@ getPic.on('text', async (ctx) => {
           `Description: ${ctx.session.description} \n` +
           `Photo: Uploaded new photo\n\n` +
           'Thank you for feeding Frobo! \nI’ll get your news to everyone ASAP. You can replace the photo by new photo\n\nOR\n\n' + 
-          'Click Post > to send this info to the free food channel and uWave app. Or if you would like to resubmit information click < Back\n\n',
+          'Click "Post" to send this info to the free food channel and uWave app. Or if you would like to resubmit information click < Back\n\n',
       
           { reply_markup: { keyboard: [['< Back', 'Post >']], resize_keyboard: true, one_time_keyboard: true } }
           )
