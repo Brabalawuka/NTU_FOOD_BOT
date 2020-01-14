@@ -11,7 +11,7 @@ const axios = require('axios').default;
 const ProjectID = 'wave-sandbox-1dbd5'
 const botToken = "965613179:AAHmrkgg_Z3RTX7IM9fm6lr2_W0TOz-zNo0"
 const waveUID = 'IbVuxpPUaaeZ0NUbvzHaulOzTJP2'
-const channelID = "@wave_bot_test"
+const channelID = "@freefoodntu"
 const imageServerURl = 'https://admin.ntuevents.com/api/food/upload'
 
 

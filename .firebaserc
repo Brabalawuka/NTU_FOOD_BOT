@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "wave-sandbox-1dbd5"
+    "default": "wave-sandbox-1dbd5",
+    "staging": "wave-sandbox-1dbd5",
+    "release": "wave-now-co"
   }
 }
